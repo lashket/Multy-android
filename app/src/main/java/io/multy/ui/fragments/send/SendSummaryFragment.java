@@ -21,8 +21,11 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ScrollView;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import butterknife.BindString;
@@ -34,6 +37,7 @@ import io.multy.api.MultyApi;
 import io.multy.api.socket.CurrenciesRate;
 import io.multy.model.entities.wallet.CurrencyCode;
 import io.multy.model.entities.wallet.RecentAddress;
+import io.multy.model.entities.wallet.SavedOperation;
 import io.multy.model.requests.HdTransactionRequestEntity;
 import io.multy.storage.RealmManager;
 import io.multy.ui.fragments.BaseFragment;
@@ -53,6 +57,7 @@ import timber.log.Timber;
 
 public class SendSummaryFragment extends BaseFragment {
 
+    private static final String ARG_IS_FOR_SAVED = "is_for_saved";
     private static final String TAG = SendSummaryFragment.class.getSimpleName();
     public static final String TAG_SEND_SUCCESS = SendSummaryFragment.class.getSimpleName();
 
@@ -84,6 +89,12 @@ public class SendSummaryFragment extends BaseFragment {
     ImageView sliderFinish;
     @BindView(R.id.scrollview)
     ScrollView scrollView;
+    @BindView(R.id.save_switch)
+    Switch saveSwitch;
+    @BindView(R.id.name_input)
+    EditText nameInput;
+    @BindView(R.id.container_save)
+    View containerSave;
 
     @BindString(R.string.donation_format_pattern)
     String formatPattern;
@@ -99,6 +110,15 @@ public class SendSummaryFragment extends BaseFragment {
     public static SendSummaryFragment newInstance() {
         return new SendSummaryFragment();
     }
+
+    public static SendSummaryFragment newInstanceForSavedOperation() {
+        Bundle bundle = new Bundle();
+        bundle.putBoolean(ARG_IS_FOR_SAVED, true);
+        SendSummaryFragment sendSummaryFragment = new SendSummaryFragment();
+        sendSummaryFragment.setArguments(bundle);
+        return sendSummaryFragment;
+    }
+
 
     @Nullable
     @Override
@@ -117,6 +137,15 @@ public class SendSummaryFragment extends BaseFragment {
         });
         Analytics.getInstance(getActivity()).logSendSummaryLaunch(viewModel.getChainId());
         initAnimations();
+        initSwitch();
+        if (viewModel.getIsForSaved()) {
+            containerSave.setVisibility(View.GONE);
+        } else {
+            containerSave.setVisibility(View.VISIBLE);
+        }
+//        if (getArguments().getBoolean(ARG_IS_FOR_SAVED, false)) {
+//            container.setVisibility(GON);
+//        }
         return view;
     }
 
@@ -192,10 +221,14 @@ public class SendSummaryFragment extends BaseFragment {
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                     if (response.isSuccessful()) {
                         viewModel.isLoading.postValue(false);
+                        if (saveSwitch.isChecked()) {
+                            RealmManager.getAssetsDao().saveOperation(new SavedOperation(viewModel.getFee(), viewModel.getReceiverAddress().getValue(), viewModel.thoseAddress.getValue(), nameInput.getText().toString(), viewModel.getAmount(), viewModel.getWallet().getId()));
+                        }
                         long uniqueId = RecentAddress.stringToId(addressTo);
                         if (!RealmManager.getAssetsDao().ifAddressExist(uniqueId)) {
                             RealmManager.getAssetsDao().saveRecentAddress(new RecentAddress(viewModel.getWallet().getCurrencyId(), viewModel.getWallet().getNetworkId(), addressTo, uniqueId));
                         }
+
                         CompleteDialogFragment.newInstance(viewModel.getChainId()).show(getActivity().getSupportFragmentManager(), TAG_SEND_SUCCESS);
                     } else {
                         Analytics.getInstance(getActivity()).logError(AnalyticsConstants.ERROR_TRANSACTION_API);
@@ -215,7 +248,15 @@ public class SendSummaryFragment extends BaseFragment {
         }
     }
 
-
+    private void initSwitch(){
+        saveSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                nameInput.setVisibility(View.VISIBLE);
+            } else {
+                nameInput.setVisibility(View.GONE);
+            }
+        });
+    }
 
     private void setInfo() {
         CurrenciesRate currenciesRate = RealmManager.getSettingsDao().getCurrenciesRate();

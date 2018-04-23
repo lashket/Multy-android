@@ -55,7 +55,7 @@ public class AssetRequestActivity extends BaseActivity {
 
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
         startFlow();

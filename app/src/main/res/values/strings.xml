@@ -261,5 +261,8 @@
     <string name="agreement_read">I have read the terms of the license agreement and agree to the processing of my personal data</string>
     <string name="discard">Discard</string>
     <string name="accept">Accept</string>
+    <string name="saved_operations">Saved operations</string>
+    <string name="add_to_fast_operations">Add to fast operations</string>
+    <string name="save_to_fast_operations">Save to fast operations</string>
 
 </resources>

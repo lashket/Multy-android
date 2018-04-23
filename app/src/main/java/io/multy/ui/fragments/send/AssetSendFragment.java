@@ -25,9 +25,11 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.multy.R;
 import io.multy.model.entities.wallet.RecentAddress;
+import io.multy.model.entities.wallet.SavedOperation;
 import io.multy.storage.RealmManager;
 import io.multy.ui.activities.AssetSendActivity;
 import io.multy.ui.adapters.RecentAddressesAdapter;
+import io.multy.ui.adapters.SavedOperationsAdapter;
 import io.multy.ui.fragments.BaseFragment;
 import io.multy.ui.fragments.dialogs.DonateDialog;
 import io.multy.util.Constants;
@@ -61,7 +63,7 @@ public class AssetSendFragment extends BaseFragment {
         ButterKnife.bind(this, view);
         viewModel = ViewModelProviders.of(getActivity()).get(AssetSendViewModel.class);
         setBaseViewModel(viewModel);
-        if (!TextUtils.isEmpty(viewModel.getReceiverAddress().getValue())) {
+        if (!TextUtils.isEmpty(viewModel.getReceiverAddress().getValue()) && !viewModel.getIsForSaved()) {
             inputAddress.setText(viewModel.getReceiverAddress().getValue());// to set address from scanning qr or wallet
         }
         viewModel.getReceiverAddress().observe(getActivity(), s -> inputAddress.setText(s));
@@ -74,15 +76,16 @@ public class AssetSendFragment extends BaseFragment {
     private void initRecentAddresses() {
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setHasFixedSize(true);
-        RealmResults<RecentAddress> recentAddresses;
-        if (getActivity() != null && getActivity().getIntent().hasCategory(Constants.EXTRA_SENDER_ADDRESS)
-                && viewModel.getWallet() != null) {
-            recentAddresses = RealmManager.getAssetsDao()
-                    .getRecentAddresses(viewModel.getWallet().getCurrencyId(), viewModel.getWallet().getNetworkId());
-        } else {
-            recentAddresses = RealmManager.getAssetsDao().getRecentAddresses();
-        }
-        recyclerView.setAdapter(new RecentAddressesAdapter(recentAddresses, address -> inputAddress.setText(address)));
+//        RealmResults<RecentAddress> recentAddresses;
+//        if (getActivity() != null && getActivity().getIntent().hasCategory(Constants.EXTRA_SENDER_ADDRESS)
+//                && viewModel.getWallet() != null) {
+//            recentAddresses = RealmManager.getAssetsDao()
+//                    .getRecentAddresses(viewModel.getWallet().getCurrencyId(), viewModel.getWallet().getNetworkId());
+//        } else {
+//            recentAddresses = RealmManager.getAssetsDao().getRecentAddresses();
+//        }
+//        recyclerView.setAdapter(new RecentAddressesAdapter(recentAddresses, address -> inputAddress.setText(address)));
+        recyclerView.setAdapter(new SavedOperationsAdapter(RealmManager.getAssetsDao().getSavedOperations(), this::onSavedOperationClicked));
     }
 
     @Override
@@ -147,6 +150,11 @@ public class AssetSendFragment extends BaseFragment {
         }
     }
 
+    void onSavedOperationClicked(SavedOperation savedOperation) {
+        viewModel.setSavedOperation(savedOperation);
+        ((AssetSendActivity) getActivity()).setFragment(R.string.send_summary, R.id.container, SavedOperationFragment.newInstance());
+    }
+
     @OnClick(R.id.button_address)
     void onClickAddressBook(){
         Analytics.getInstance(getActivity()).logSendTo(AnalyticsConstants.SEND_TO_ADDRESS_BOOK);
@@ -175,6 +183,7 @@ public class AssetSendFragment extends BaseFragment {
 
     @OnClick(R.id.button_next)
     void onClickNext(){
+        viewModel.setIsForSave(false);
         viewModel.setReceiverAddress(inputAddress.getText().toString());
         viewModel.thoseAddress.setValue(inputAddress.getText().toString());
         ((AssetSendActivity) getActivity()).setFragment(R.string.send_from, R.id.container, WalletChooserFragment.newInstance(blockchainId, networkId));

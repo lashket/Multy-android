@@ -130,7 +130,7 @@
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:elevation="@dimen/elevation_4dp"
-        android:text="@string/recent_addresses"
+        android:text="@string/saved_operations"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         android:textColor="@color/text_grey"
         app:layout_constraintLeft_toLeftOf="parent"

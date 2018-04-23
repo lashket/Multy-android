@@ -7,19 +7,35 @@
 package io.multy.model.entities;
 
 
-public class Fee {
+import io.realm.RealmObject;
+
+public class Fee extends RealmObject {
 
     private String time;
     private String name;
     private long amount;
     private int blockCount;
     private boolean isSelected = false;
+    private int index;
 
-    public Fee(String name, long amount, int blockCount, String time) {
+    public Fee() {
+
+    }
+
+    public Fee(String name, long amount, int blockCount, String time, int index) {
         this.name = name;
         this.amount = amount;
         this.blockCount = blockCount;
         this.time = time;
+        this.index = index;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
     }
 
     public boolean isSelected() {

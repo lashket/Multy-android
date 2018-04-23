@@ -99,17 +99,17 @@ public class SplashActivity extends AppCompatActivity {
                     try {
                         PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
                         int versionCode = pInfo.versionCode;
-                        if (versionCode < androidConfig.getSoftVersion()) {
-                            //we can still use soft version
-                            //leave this clause for future possible purposes
+//                        if (versionCode < androidConfig.getSoftVersion()) {
+//                            //we can still use soft version
+//                            //leave this clause for future possible purposes
+////                            showUpdateDialog();
+//                            showMainActivity();
+//                        } else if (6 < androidConfig.getHardVersion()) {
 //                            showUpdateDialog();
-                            showMainActivity();
-                        } else if (6 < androidConfig.getHardVersion()) {
-                            showUpdateDialog();
-                        } else {
-                            showMainActivity();
-                        }
-
+//                        } else {
+//                            showMainActivity();
+//                        }
+                        showMainActivity();
                         if (configResponse.getDonates() != null) {
                             EventBus.getDefault().postSticky(configResponse);
                         }

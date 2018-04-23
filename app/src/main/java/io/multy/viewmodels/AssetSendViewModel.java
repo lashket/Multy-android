@@ -15,6 +15,7 @@ import io.multy.R;
 import io.multy.api.MultyApi;
 import io.multy.api.socket.CurrenciesRate;
 import io.multy.model.entities.Fee;
+import io.multy.model.entities.wallet.SavedOperation;
 import io.multy.model.entities.wallet.Wallet;
 import io.multy.model.responses.FeeRateResponse;
 import io.multy.storage.RealmManager;
@@ -47,6 +48,7 @@ public class AssetSendViewModel extends BaseViewModel {
     private byte[] seed;
     private String signTransactionError;
     private Handler handler = new Handler();
+    private boolean isForSaved = false;
 
     public AssetSendViewModel() {
         currenciesRate = RealmManager.getSettingsDao().getCurrenciesRate();
@@ -227,4 +229,26 @@ public class AssetSendViewModel extends BaseViewModel {
     public int getChainId() {
         return 1;
     }
+
+    public void setSavedOperation(SavedOperation savedOperation) {
+        setAmount(savedOperation.getAmount());
+        setWallet(RealmManager.getAssetsDao().getWalletById(savedOperation.getWalletId()));
+        setFee(savedOperation.getFee());
+        setAmountScanned(true);
+        setDonationAmount("3213");
+        setReceiverAddress(savedOperation.getReceiverAddress());
+        thoseAddress.setValue(savedOperation.getReceiverAddress());
+        setTransactionPrice("3213");
+        setIsForSave(true);
+//        set
+    }
+
+    public void setIsForSave(boolean value) {
+        isForSaved = value;
+    }
+
+    public boolean getIsForSaved() {
+        return isForSaved;
+    }
+
 }

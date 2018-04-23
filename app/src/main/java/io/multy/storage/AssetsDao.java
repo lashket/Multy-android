@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Objects;
 
 import io.multy.model.entities.wallet.RecentAddress;
+import io.multy.model.entities.wallet.SavedOperation;
 import io.multy.model.entities.wallet.Wallet;
 import io.multy.model.entities.wallet.WalletAddress;
 import io.multy.util.NativeDataHelper;
@@ -18,6 +19,7 @@ import io.realm.Realm;
 import io.realm.RealmObject;
 import io.realm.RealmQuery;
 import io.realm.RealmResults;
+import io.realm.Sort;
 
 public class AssetsDao {
 
@@ -136,4 +138,29 @@ public class AssetsDao {
         RealmQuery<RecentAddress> query = realm.where(RecentAddress.class).equalTo(RecentAddress.RECENT_ADDRESS_ID, addressTo);
         return query.count() != 0;
     }
+
+    public void saveOperation(SavedOperation savedOperation) {
+        realm.executeTransaction(realm -> {
+            Number currentMaxId = realm.where(SavedOperation.class).max(SavedOperation.ID_FIELD_NAME);
+            int nextId;
+            if (currentMaxId == null) {
+                nextId = 1;
+            } else {
+                nextId = currentMaxId.intValue() + 1;
+            }
+            savedOperation.setId(nextId);
+            realm.insertOrUpdate(savedOperation);
+        });
+    }
+
+    public RealmResults<SavedOperation> getSavedOperations() {
+        return realm.where(SavedOperation.class).findAll().sort(SavedOperation.ID_FIELD_NAME, Sort.DESCENDING);
+    }
+
+    public void removeSavedOperation(SavedOperation savedOperation) {
+        realm.executeTransaction(realm -> savedOperation.deleteFromRealm());
+    }
+
+
+
 }
